@@ -4,14 +4,24 @@ const app = express();
 const server = http.createServer(app);
 const socket = require("socket.io");
 const io = socket(server);
+const users = {
+
+}
 
 io.on("connection", socket => {
   console.log(`Socket ${socket.id} has connected!`)
     socket.emit("your id", socket.id);
+
+    // Adds User
+    socket.on("register user", body => {
+      users[body.username] = body.id
+      console.log(users)
+    })
     socket.on("send message", body => {
-        io.emit("message", body)
+        io.to(users[body.profile]).emit('message', body)
+        io.to(users[body.friend]).emit("message", body)
     })
 })
 
 
-server.listen(8000, () => console.log("server is running on port 8000"));
+server.listen(process.env.PORT, () => console.log("server is running on port 8000"));
